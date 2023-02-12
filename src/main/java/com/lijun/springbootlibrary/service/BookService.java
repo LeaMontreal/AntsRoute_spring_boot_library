@@ -4,11 +4,17 @@ import com.lijun.springbootlibrary.dao.BookRepository;
 import com.lijun.springbootlibrary.dao.CheckoutRepository;
 import com.lijun.springbootlibrary.entity.Book;
 import com.lijun.springbootlibrary.entity.Checkout;
+import com.lijun.springbootlibrary.responsemodels.ShelfCurrentLoansResponse;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 // TODO S19 13.1 Step 3: Create Book Service
 @Service
@@ -65,5 +71,42 @@ public class BookService {
   // TODO S19 22.2 how many books user already checked out
   public int currentLoansCount(String userEmail) {
     return checkoutRepository.findBooksByUserEmail(userEmail).size();
+  }
+
+  // TODO S25 22 Add Current Loans Service function
+  public List<ShelfCurrentLoansResponse> currentLoans(String userEmail) throws Exception {
+    List<ShelfCurrentLoansResponse> shelfCurrentLoansResponses = new ArrayList<>();
+
+    // TODO S25 22.1 find a bookId list that the user has checked out
+    List<Checkout> checkoutList = checkoutRepository.findBooksByUserEmail(userEmail);
+    List<Long> bookIdList = new ArrayList<>();
+
+    for (Checkout i: checkoutList) {
+      bookIdList.add(i.getBookId());
+    }
+
+    // TODO S25 22.2 find a book list that matches the bookId list
+    List<Book> books = bookRepository.findBooksByBookIds(bookIdList);
+
+    // TODO S25 22.3 iterate each book, calculate how many days the book has already been checked out. Generate a new Response object and add it into the output list: shelfCurrentLoansResponses
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+    for (Book book : books) {
+      Optional<Checkout> checkout = checkoutList.stream()
+              .filter(x -> x.getBookId() == book.getId()).findFirst();
+
+      if (checkout.isPresent()) {
+        Date d1 = sdf.parse(checkout.get().getReturnDate());
+        Date d2 = sdf.parse(LocalDate.now().toString());
+
+        TimeUnit time = TimeUnit.DAYS;
+
+        long difference_In_Time = time.convert(d1.getTime() - d2.getTime(),
+                TimeUnit.MILLISECONDS);
+
+        shelfCurrentLoansResponses.add(new ShelfCurrentLoansResponse(book, (int) difference_In_Time));
+      }
+    }
+
+    return shelfCurrentLoansResponses;
   }
 }
