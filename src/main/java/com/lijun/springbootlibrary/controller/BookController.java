@@ -79,4 +79,12 @@ public class BookController {
     return bookService.currentLoansCount(userEmail);
   }
 
+  // TODO S25 42 Add returnBook endpoint
+  @PutMapping("/secure/return")
+  public void returnBook(@RequestHeader(value = "Authorization") String token,
+                         @RequestParam Long bookId) throws Exception {
+    String userEmail = ExtractJWT.payloadJWTExtraction(token, "\"sub\"");
+    bookService.returnBook(userEmail, bookId);
+  }
+
 }

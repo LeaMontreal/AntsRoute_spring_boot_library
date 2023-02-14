@@ -109,4 +109,23 @@ public class BookService {
 
     return shelfCurrentLoansResponses;
   }
+
+  // TODO S25 41 Add Return Book Service
+  public void returnBook (String userEmail, Long bookId) throws Exception {
+    // check we have this bookId in database checkout table and book table
+    Checkout validateCheckout = checkoutRepository.findByUserEmailAndBookId(userEmail, bookId);
+
+    Optional<Book> book = bookRepository.findById(bookId);
+
+    if (!book.isPresent() || validateCheckout == null) {
+      throw new Exception("Book does not exist or not checked out by user");
+    }
+
+    // change available copies
+    book.get().setCopiesAvailable(book.get().getCopiesAvailable() + 1);
+
+    // save into book table, delete record from checkout table
+    bookRepository.save(book.get());
+    checkoutRepository.deleteById(validateCheckout.getId());
+  }
 }
