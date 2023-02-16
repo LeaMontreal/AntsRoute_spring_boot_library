@@ -2,8 +2,10 @@ package com.lijun.springbootlibrary.service;
 
 import com.lijun.springbootlibrary.dao.BookRepository;
 import com.lijun.springbootlibrary.dao.CheckoutRepository;
+import com.lijun.springbootlibrary.dao.HistoryRepository;
 import com.lijun.springbootlibrary.entity.Book;
 import com.lijun.springbootlibrary.entity.Checkout;
+import com.lijun.springbootlibrary.entity.History;
 import com.lijun.springbootlibrary.responsemodels.ShelfCurrentLoansResponse;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,9 +27,13 @@ public class BookService {
 
   private CheckoutRepository checkoutRepository;
 
-  public BookService(BookRepository bookRepository, CheckoutRepository checkoutRepository) {
+  // TODO S26 13.1 dependency injection
+  private HistoryRepository historyRepository;
+
+  public BookService(BookRepository bookRepository, CheckoutRepository checkoutRepository, HistoryRepository historyRepository) {
     this.bookRepository = bookRepository;
     this.checkoutRepository = checkoutRepository;
+    this.historyRepository = historyRepository;
   }
 
   public Book checkoutBook(String userEmail, Long bookId) throws Exception{
@@ -127,6 +133,18 @@ public class BookService {
     // save into book table, delete record from checkout table
     bookRepository.save(book.get());
     checkoutRepository.deleteById(validateCheckout.getId());
+
+    // TODO S26 13.2 save book and actual return date into database
+    History history = new History(
+            userEmail,
+            validateCheckout.getCheckoutDate(),
+            LocalDate.now().toString(),
+            book.get().getTitle(),
+            book.get().getAuthor(),
+            book.get().getDescription(),
+            book.get().getImg()
+    );
+    historyRepository.save(history);
   }
 
   // TODO S25 51 Add Renew Loan Service
