@@ -26,7 +26,7 @@ public class SecurityConfiguration {
 //    // Protect endpoints at /api/<type>/secure
 //    httpSecurity.authorizeRequests(configurer ->
 //                    configurer
-//                            .antMatchers("/api/v1/books/secure/**", "/api/v1/reviews/secure/**")
+//                            .antMatchers("/api/v1/books/secure/**", "/api/v1/reviews/secure/**", "/api/messages/secure/**")
 //                            .authenticated())  // only authenticated user can access the routes match
 //            .oauth2ResourceServer()  // spring boot act as an oauth2ResourceServer
 //            .jwt(); // spring boot use jwt
