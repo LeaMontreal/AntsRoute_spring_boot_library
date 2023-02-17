@@ -4,13 +4,17 @@ import com.lijun.springbootlibrary.entity.Message;
 import com.lijun.springbootlibrary.service.MessagesService;
 import com.lijun.springbootlibrary.utils.ExtractJWT;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 // TODO S27 14 Message Controller
-@CrossOrigin("https://localhost:3000")
+@CrossOrigin("http://localhost:3000")
 @RestController
-@RequestMapping("/api/messages")
+@RequestMapping("/api/v1/messages")
 public class MessagesController {
+  @Value("${myDebugForOkta}")
+  private String myDebugForOkta;
+
   private MessagesService messagesService;
 
   @Autowired
@@ -21,7 +25,12 @@ public class MessagesController {
   @PostMapping("/secure/add/message")
   public void postMessage(@RequestHeader(value="Authorization") String token,
                           @RequestBody Message messageRequest) {
-    String userEmail = ExtractJWT.payloadJWTExtraction(token, "\"sub\"");
+    String userEmail = "";
+    if (myDebugForOkta.equals("true")) {
+      userEmail = "watera@gmail.com";
+    } else {
+      userEmail = ExtractJWT.payloadJWTExtraction(token, "\"sub\"");
+    }
     messagesService.postMessage(messageRequest, userEmail);
   }
 }
