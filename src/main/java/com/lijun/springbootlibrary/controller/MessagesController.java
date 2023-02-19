@@ -1,6 +1,7 @@
 package com.lijun.springbootlibrary.controller;
 
 import com.lijun.springbootlibrary.entity.Message;
+import com.lijun.springbootlibrary.requestmodels.AdminQuestionRequest;
 import com.lijun.springbootlibrary.service.MessagesService;
 import com.lijun.springbootlibrary.utils.ExtractJWT;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,4 +34,17 @@ public class MessagesController {
     }
     messagesService.postMessage(messageRequest, userEmail);
   }
+
+  // TODO S28 51.3 Add endPoint, check the user’s role, extract “userType” field
+  @PutMapping("/secure/admin/message")
+  public void putMessage(@RequestHeader(value="Authorization") String token,
+                         @RequestBody AdminQuestionRequest adminQuestionRequest) throws Exception {
+    String userEmail = ExtractJWT.payloadJWTExtraction(token, "\"sub\"");
+    String admin = ExtractJWT.payloadJWTExtraction(token, "\"userType\"");
+    if (admin == null || !admin.equals("admin")) {
+      throw new Exception("Administration page only.");
+    }
+    messagesService.putMessage(adminQuestionRequest, userEmail);
+  }
+
 }
