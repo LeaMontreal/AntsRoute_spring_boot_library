@@ -39,8 +39,16 @@ public class MessagesController {
   @PutMapping("/secure/admin/message")
   public void putMessage(@RequestHeader(value="Authorization") String token,
                          @RequestBody AdminQuestionRequest adminQuestionRequest) throws Exception {
-    String userEmail = ExtractJWT.payloadJWTExtraction(token, "\"sub\"");
-    String admin = ExtractJWT.payloadJWTExtraction(token, "\"userType\"");
+    String userEmail = "";
+    String admin;
+    if (myDebugForOkta.equals("true")) {
+      userEmail = "adminuser@gmail.com";
+      admin = "admin";
+    } else {
+      userEmail = ExtractJWT.payloadJWTExtraction(token, "\"sub\"");
+      admin = ExtractJWT.payloadJWTExtraction(token, "\"userType\"");
+    }
+
     if (admin == null || !admin.equals("admin")) {
       throw new Exception("Administration page only.");
     }
