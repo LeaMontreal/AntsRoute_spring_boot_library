@@ -9,5 +9,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 // TODO S27 12 Create Message Repository
 public interface MessageRepository extends JpaRepository<Message, Long> {
   // TODO S27 33.1 Add interface for search all messages of a specific user in MessageRepository
-  Page<Message> findByUserEmail(@RequestParam("user_email") String userEmail, Pageable pageable);
+  Page<Message> findByUserEmail(@RequestParam("userEmail") String userEmail, Pageable pageable);
+
+  // TODO S28 Add interface for search all closed or open messages
+  Page<Message> findByClosed(@RequestParam("closed") boolean closed, Pageable pageable);
 }
