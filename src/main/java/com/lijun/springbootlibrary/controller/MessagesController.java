@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 // TODO S27 14 Message Controller
-@CrossOrigin("http://localhost:3000")
+//@CrossOrigin("http://localhost:3000")
 @RestController
 @RequestMapping("/api/v1/messages")
 public class MessagesController {

@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 // TODO S19 14.1 Step 4: Create Book Controller
-@CrossOrigin("http://localhost:3000")
+//@CrossOrigin("http://localhost:3000")
 @RestController
 @RequestMapping("/api/v1/books")
 public class BookController {
