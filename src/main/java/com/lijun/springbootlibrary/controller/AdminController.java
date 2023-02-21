@@ -26,7 +26,8 @@ public class AdminController {
   @PutMapping("/secure/increase/book/quantity")
   public void increaseBookQuantity(@RequestHeader(value="Authorization") String token,
                                    @RequestParam Long bookId) throws Exception {
-    String admin = ExtractJWT.payloadJWTExtraction(token, "\"userType\"");
+    String admin = getAdminUserType(token);
+
     if (admin == null || !admin.equals("admin")) {
       throw new Exception("Administration page only");
     }
@@ -37,7 +38,8 @@ public class AdminController {
   @PutMapping("/secure/decrease/book/quantity")
   public void decreaseBookQuantity(@RequestHeader(value="Authorization") String token,
                                    @RequestParam Long bookId) throws Exception {
-    String admin = ExtractJWT.payloadJWTExtraction(token, "\"userType\"");
+    String admin = getAdminUserType(token);
+
     if (admin == null || !admin.equals("admin")) {
       throw new Exception("Administration page only");
     }
@@ -48,12 +50,7 @@ public class AdminController {
   @PostMapping("/secure/add/book")
   public void postBook(@RequestHeader(value="Authorization") String token,
                        @RequestBody AddBookRequest addBookRequest) throws Exception {
-    String admin;
-    if (myDebugForOkta.equals("true")) {
-      admin = "admin";
-    } else {
-      admin = ExtractJWT.payloadJWTExtraction(token, "\"userType\"");
-    }
+    String admin = getAdminUserType(token);
 
     if (admin == null || !admin.equals("admin")) {
       throw new Exception("Administration page only");
@@ -64,10 +61,22 @@ public class AdminController {
   @DeleteMapping("/secure/delete/book")
   public void deleteBook(@RequestHeader(value="Authorization") String token,
                          @RequestParam Long bookId) throws Exception {
-    String admin = ExtractJWT.payloadJWTExtraction(token, "\"userType\"");
+    String admin = getAdminUserType(token);
+
     if (admin == null || !admin.equals("admin")) {
       throw new Exception("Administration page only");
     }
     adminService.deleteBook(bookId);
+  }
+
+  private String getAdminUserType(String token){
+    String admin;
+    if (myDebugForOkta.equals("true")) {
+      admin = "admin";
+    } else {
+      admin = ExtractJWT.payloadJWTExtraction(token, "\"userType\"");
+    }
+
+    return admin;
   }
 }
