@@ -15,6 +15,7 @@ public interface CheckoutRepository extends JpaRepository<Checkout, Long> {
   // TODO S19 22.1, tell how many books user already checked out
   List<Checkout> findBooksByUserEmail(String userEmail);
 
+  // TODO S30 23.1 for delete a book
   @Modifying
   @Query("DELETE FROM Checkout WHERE bookId IN :book_id")
   void deleteAllByBookId(@Param("book_id") Long bookId);

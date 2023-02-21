@@ -58,6 +58,7 @@ public class AdminController {
     adminService.postBook(addBookRequest);
   }
 
+  // TODO S30 23.5 for delete a book
   @DeleteMapping("/secure/delete/book")
   public void deleteBook(@RequestHeader(value="Authorization") String token,
                          @RequestParam Long bookId) throws Exception {

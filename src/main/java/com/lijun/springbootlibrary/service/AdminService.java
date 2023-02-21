@@ -16,6 +16,7 @@ import java.util.Optional;
 @Transactional
 public class AdminService {
   private BookRepository bookRepository;
+  // TODO S30 23.3 inject reviewRepository and checkoutRepository for delete a book
   private ReviewRepository reviewRepository;
   private CheckoutRepository checkoutRepository;
 
@@ -71,6 +72,7 @@ public class AdminService {
     bookRepository.save(book);
   }
 
+  // TODO S30 23.4 delete a book, and delete corresponding checkout records and reviews
   public void deleteBook(Long bookId) throws Exception {
     Optional<Book> book = bookRepository.findById(bookId);
 
