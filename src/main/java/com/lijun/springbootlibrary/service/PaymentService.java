@@ -42,6 +42,10 @@ public class PaymentService {
     params.put("amount", paymentInfoRequest.getAmount());
     params.put("currency", paymentInfoRequest.getCurrency());
     params.put("payment_method_types", paymentMethodTypes);
+    // add store info to “description”
+    params.put("description", "Ants Route Library");
+
+    params.put("receipt_email", paymentInfoRequest.getReceiptEmail());
 
     // send request to stripe.com
     return PaymentIntent.create(params);

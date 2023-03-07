@@ -3,10 +3,13 @@ package com.lijun.springbootlibrary.service;
 import com.lijun.springbootlibrary.dao.BookRepository;
 import com.lijun.springbootlibrary.dao.CheckoutRepository;
 import com.lijun.springbootlibrary.dao.HistoryRepository;
+import com.lijun.springbootlibrary.dao.PaymentRepository;
 import com.lijun.springbootlibrary.entity.Book;
 import com.lijun.springbootlibrary.entity.Checkout;
 import com.lijun.springbootlibrary.entity.History;
+import com.lijun.springbootlibrary.entity.Payment;
 import com.lijun.springbootlibrary.responsemodels.ShelfCurrentLoansResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,16 +27,20 @@ import java.util.concurrent.TimeUnit;
 public class BookService {
   // TODO S19 13.2 dependency injection
   private BookRepository bookRepository;
-
   private CheckoutRepository checkoutRepository;
-
   // TODO S26 13.1 dependency injection
   private HistoryRepository historyRepository;
+  // TODO S34 39.1 for payment
+  private PaymentRepository paymentRepository;
 
-  public BookService(BookRepository bookRepository, CheckoutRepository checkoutRepository, HistoryRepository historyRepository) {
+  @Value("${library.book.Loan.days}")
+  private String bookLoanDays;
+
+  public BookService(BookRepository bookRepository, CheckoutRepository checkoutRepository, HistoryRepository historyRepository, PaymentRepository paymentRepository) {
     this.bookRepository = bookRepository;
     this.checkoutRepository = checkoutRepository;
     this.historyRepository = historyRepository;
+    this.paymentRepository = paymentRepository;
   }
 
   public Book checkoutBook(String userEmail, Long bookId) throws Exception{
@@ -46,6 +53,37 @@ public class BookService {
       throw new Exception("Book doesn't exist or already checked out by user");
     }
 
+    // TODO S34 39.2 Check each book that the user has checked out. If there's at least one book overdue (the book Needs be Returned), the user cannot checkout a new book anymore
+    List<Checkout> currentBooksCheckedOut = checkoutRepository.findBooksByUserEmail(userEmail);
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+    boolean bookNeedsReturned = false;
+    // iterate and calculate every book's lasting time, check if there's overdue book
+    for (Checkout checkout: currentBooksCheckedOut) {
+      Date d1 = sdf.parse(checkout.getReturnDate());
+      Date d2 = sdf.parse(LocalDate.now().toString());
+
+      TimeUnit time = TimeUnit.DAYS;
+      double differenceInTime = time.convert(d1.getTime() - d2.getTime(), TimeUnit.MILLISECONDS);
+
+      if (differenceInTime < 0) {
+        bookNeedsReturned = true;
+        break;
+      }
+    }
+
+    // Check if the user has an outstanding fee
+    Payment userPayment = paymentRepository.findByUserEmail(userEmail);
+    if ((userPayment != null && userPayment.getAmount() > 0) || (userPayment != null && bookNeedsReturned)) {
+      throw new Exception("Outstanding fees");
+    }
+    // The first time this user need to pay, create a payment record for user
+    if (userPayment == null) {
+      Payment payment = new Payment();
+      payment.setAmount(00.00);
+      payment.setUserEmail(userEmail);
+      paymentRepository.save(payment);
+    }
+
     // change remain available copies
     book.get().setCopiesAvailable(book.get().getCopiesAvailable() - 1);
     // save into database book table
@@ -55,7 +93,7 @@ public class BookService {
     Checkout checkout = new Checkout(
             userEmail,
             LocalDate.now().toString(),
-            LocalDate.now().plusDays(7).toString(),
+            LocalDate.now().plusDays(Integer.parseInt(bookLoanDays)).toString(),
             book.get().getId()
     );
     // save into database checkout table
@@ -130,8 +168,30 @@ public class BookService {
     // change available copies
     book.get().setCopiesAvailable(book.get().getCopiesAvailable() + 1);
 
-    // save into book table, delete record from checkout table
+    // save into book table
     bookRepository.save(book.get());
+
+    // TODO S34 39.3 Deal with overdue book, change payment amount
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+
+    Date d1 = sdf.parse(validateCheckout.getReturnDate());
+    Date d2 = sdf.parse(LocalDate.now().toString());
+
+    TimeUnit time = TimeUnit.DAYS;
+
+    double differenceInTime = time.convert(d1.getTime() - d2.getTime(), TimeUnit.MILLISECONDS);
+
+    if (differenceInTime < 0) {
+      Payment payment = paymentRepository.findByUserEmail(userEmail);
+      if (payment == null) {
+        payment = new Payment();
+        payment.setUserEmail(userEmail);
+      }
+      payment.setAmount(payment.getAmount() + (differenceInTime * -1));
+      paymentRepository.save(payment);
+    }
+
+    // delete record from checkout table
     checkoutRepository.deleteById(validateCheckout.getId());
 
     // TODO S26 13.2 save book and actual return date into database

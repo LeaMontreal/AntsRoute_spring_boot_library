@@ -6,7 +6,7 @@ import com.lijun.springbootlibrary.utils.ExtractJWT;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
-//@CrossOrigin("http://localhost:3000")
+@CrossOrigin("https://localhost:3000")
 @RestController
 @RequestMapping("/api/v1/reviews")
 public class ReviewController {

@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 // TODO S29 14 New AdminController, inject dependency
-//@CrossOrigin("http://localhost:3000")
+//@CrossOrigin("https://localhost:3000")
 @RestController
 @RequestMapping("/api/v1/admin")
 public class AdminController {
